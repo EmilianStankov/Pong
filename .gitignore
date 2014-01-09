@@ -11,3 +11,19 @@
 *.lai
 *.la
 *.a
+
+#added more local specific files to ignore
+*.opensdf
+*.sdf
+*.exe
+*.tlog
+*.manifest
+*.pdb
+*.idb
+*.rc
+*.res
+*.obj
+*.log
+*.lastbuildstate
+*.sln
+*.suo
