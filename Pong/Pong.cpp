@@ -16,7 +16,8 @@ typedef vector<GameObject>::const_iterator const_iterator;
 const int WindowWidth = 70;
 const int WindowHeight = 30;
 // Ball variables
-int ballSpeed = 1;
+int ballSpeedX = 1;
+int ballSpeedY = 1;
 
 // Paddle variables
 const int PaddleLength = 5;
@@ -59,10 +60,16 @@ void Update()
 		paddle->Coordinates.Y += direction.Y;
 	}
 
-	ball.Coordinates.X += ballSpeed;
+	ball.Coordinates.X += ballSpeedX;
 	if (ball.Coordinates.X >= WindowWidth - 1 || ball.Coordinates.X <= 0)
 	{
-		ballSpeed = -ballSpeed;
+		ballSpeedX = -ballSpeedX;
+	}
+
+	ball.Coordinates.Y += ballSpeedY;
+	if (ball.Coordinates.Y >= WindowHeight - 1 || ball.Coordinates.Y <= 0)
+	{
+		ballSpeedY = -ballSpeedY;
 	}
 }
 
@@ -76,6 +83,13 @@ void Draw()
 		for (randomAccess_iterator paddlePart = paddle->begin(); paddlePart != paddle->end(); ++paddlePart)
 		{
 			paddlePart->Draw(consoleHandle);
+			if(((ball.Coordinates.X == paddlePart->Coordinates.X + 1)||(ball.Coordinates.X == paddlePart->Coordinates.X - 1)))
+			{
+				if(ball.Coordinates.Y == paddlePart->Coordinates.Y)
+				{
+					ballSpeedX = -ballSpeedX;
+				}
+			}
 		}
 	}	
 	ball.Draw(consoleHandle);
