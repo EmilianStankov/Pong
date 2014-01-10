@@ -27,6 +27,9 @@ int paddleSpeed = 1;
 // Game variables
 unsigned long sleepDuration = 200;
 
+//AI
+bool Smart = false;
+
 vector<vector<GameObject>> paddles;
 GameObject ball(WindowWidth / 2, WindowHeight / 2, '#');
 
@@ -67,11 +70,22 @@ void Update()
 			direction.Y = 0;
 			direction.Y = paddleSpeed;
 		}
-		//else
-		//{
-			paddle->Coordinates.X += direction.X;
-			paddle->Coordinates.Y += direction.Y;
-		//}
+		paddle->Coordinates.X += direction.X;
+		paddle->Coordinates.Y += direction.Y;
+	}
+	//The AI's paddle
+	vector_iterator enemyPaddle = paddles.begin() + 1;
+
+	for (randomAccess_iterator paddle = enemyPaddle->begin(); paddle != enemyPaddle->end() ; ++paddle)
+	{
+		if(Smart)
+		{
+			paddle->Coordinates.Y += ballSpeed.y;
+		}
+		else
+		{
+			paddle->Coordinates.Y -= ballSpeed.y;
+		}
 	}
 
 	ball.Coordinates.X += ballSpeed.x;
