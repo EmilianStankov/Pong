@@ -4,6 +4,7 @@
 #include <time.h>
 
 #include "ConsoleGaming.h"
+#include "Vector2D.h"
 
 using namespace std;
 
@@ -15,9 +16,9 @@ typedef vector<GameObject>::const_iterator const_iterator;
 // Window constants
 const int WindowWidth = 70;
 const int WindowHeight = 30;
-// Ball variables
-int ballSpeedX = 1;
-int ballSpeedY = 1;
+
+
+Vector2D ballSpeed = Vector2D(1, 1);
 
 // Paddle variables
 const int PaddleLength = 5;
@@ -56,20 +57,33 @@ void Update()
 
 	for (randomAccess_iterator paddle = playerPaddle->begin(); paddle != playerPaddle->end(); ++paddle)
 	{
-		paddle->Coordinates.X += direction.X;
-		paddle->Coordinates.Y += direction.Y;
+		if(paddle->Coordinates.Y >= WindowHeight)
+		{
+			direction.Y = 0;
+			direction.Y = -paddleSpeed;
+		}
+		else if(paddle->Coordinates.Y <= -1)
+		{
+			direction.Y = 0;
+			direction.Y = paddleSpeed;
+		}
+		//else
+		//{
+			paddle->Coordinates.X += direction.X;
+			paddle->Coordinates.Y += direction.Y;
+		//}
 	}
 
-	ball.Coordinates.X += ballSpeedX;
+	ball.Coordinates.X += ballSpeed.x;
 	if (ball.Coordinates.X >= WindowWidth - 1 || ball.Coordinates.X <= 0)
 	{
-		ballSpeedX = -ballSpeedX;
+		ballSpeed.x = -ballSpeed.x;
 	}
 
-	ball.Coordinates.Y += ballSpeedY;
+	ball.Coordinates.Y += ballSpeed.y;
 	if (ball.Coordinates.Y >= WindowHeight - 1 || ball.Coordinates.Y <= 0)
 	{
-		ballSpeedY = -ballSpeedY;
+		ballSpeed.y = -ballSpeed.y;
 	}
 }
 
@@ -87,7 +101,7 @@ void Draw()
 			{
 				if(ball.Coordinates.Y == paddlePart->Coordinates.Y)
 				{
-					ballSpeedX = -ballSpeedX;
+					ballSpeed.x = -ballSpeed.x;
 				}
 			}
 		}
