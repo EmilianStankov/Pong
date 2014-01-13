@@ -16,6 +16,8 @@ typedef vector<GameObject>::const_iterator const_iterator;
 // Window constants
 const int WindowWidth = 70;
 const int WindowHeight = 30;
+const int CharWidth = 9;
+const int CharHeight = 15;
 
 
 Vector2D ballSpeed = Vector2D(1, 1);
@@ -168,6 +170,7 @@ void Draw()
 
 int main()
 {
+	InitScreen(WindowWidth*CharWidth, WindowHeight*CharHeight);
 	consoleHandle = GetStdHandle( STD_OUTPUT_HANDLE );
 
 	srand(time(NULL));

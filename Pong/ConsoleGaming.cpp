@@ -38,3 +38,12 @@ void ClearScreen(HANDLE consoleHandle)
 	/* Move the cursor home */
 	SetConsoleCursorPosition(consoleHandle, homeCoords);
 }
+
+void InitScreen(int width, int height)
+{
+	HWND consoleWnd = GetConsoleWindow();
+	RECT r;
+	GetWindowRect(consoleWnd, &r);
+
+	MoveWindow(consoleWnd, r.left, r.top, width, height, TRUE);
+}

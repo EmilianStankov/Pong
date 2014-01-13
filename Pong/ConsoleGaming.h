@@ -51,6 +51,7 @@ public:
 	}
 };
 
+void InitScreen(int width, int height);
 void ClearScreen(HANDLE consoleHandle);
 
 
