@@ -75,6 +75,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="ConsoleGaming.h" />
+    <ClInclude Include="Pong.h" />
+    <ClInclude Include="Vector2D.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ConsoleGaming.cpp" />

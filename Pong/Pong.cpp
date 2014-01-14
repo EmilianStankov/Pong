@@ -1,8 +1,4 @@
-#include <iostream>
-#include <vector>
-#include <conio.h>
-#include <time.h>
-
+#include "Pong.h"
 #include "ConsoleGaming.h"
 #include "Vector2D.h"
 
@@ -16,10 +12,12 @@ typedef vector<GameObject>::const_iterator const_iterator;
 // Window constants
 const int WindowWidth = 70;
 const int WindowHeight = 30;
+const int CharWidth = 9;
+const int CharHeight = 15;
 
 
 Vector2D ballSpeed = Vector2D(1, 1);
-int myScore = 0;
+int playerScore = 0;
 int enemyScore = 0;
 // Paddle variables
 const int PaddleLength = 5;
@@ -28,120 +26,62 @@ int player2PaddleSpeed = 1;
 
 // Game variables
 unsigned long sleepDuration = 100;
+GameState gameState;
+map<ControlNames, char> controls;
 
 //AI
-bool Smart = false;
-bool Multiplayer = true;
+bool Smart = true;
+bool Multiplayer = false;
 
 vector<vector<GameObject>> paddles;
 GameObject ball(WindowWidth / 2, WindowHeight / 2, '#');
 
-void Update()
+void HandleInput(COORD &player1Direction, COORD &player2Direction)
 {
-	COORD direction = { 0, 0 };
-	COORD enemyDirection = { 0, 0 };
-	if (kbhit())
+	if (_kbhit())
 	{
-		char key = getch();
-		switch (key)
-		{
-		case 'i':
-			enemyDirection.Y = -player2PaddleSpeed;
-			break;
-		case 'w':
-			direction.Y = -paddleSpeed;
-			break;
-		case 'k':
-			enemyDirection.Y = player2PaddleSpeed;
-			break;
-		case 's':
-			direction.Y = paddleSpeed;
-			break;
-		};
-	}
-	typedef vector<vector<GameObject>>::iterator vector_iterator;
-	vector_iterator playerPaddle = paddles.begin();
+		char key = _getch();
 
-	for (randomAccess_iterator paddle = playerPaddle->begin(); paddle != playerPaddle->end(); ++paddle)
-	{
-		if(paddle->Coordinates.Y >= WindowHeight)
-		{
-			direction.Y = -paddleSpeed;
-		}
-		else if(paddle->Coordinates.Y <= -1)
-		{
-			direction.Y = paddleSpeed;
-		}
-		paddle->Coordinates.X += direction.X;
-		paddle->Coordinates.Y += direction.Y;
-	}
-	//The AI's paddle
-	vector_iterator enemyPaddle = paddles.begin() + 1;
-	if(Multiplayer == false)
-	{
-		for (randomAccess_iterator paddle = enemyPaddle->begin(); paddle != enemyPaddle->end() ; ++paddle)
-		{
-			if(Smart)
-			{
-				paddle->Coordinates.Y += ballSpeed.y;
-			}
-			else
-			{
-				paddle->Coordinates.Y -= ballSpeed.y;
-			}
-		}
+		//make sure controls work with shift/CAPS LOCK
+		if(key >= 'A' && key <= 'Z')
+			key -= 'A' - 'a';
 
-		ball.Coordinates.X += ballSpeed.x;
-		if (ball.Coordinates.X >= WindowWidth - 1 || ball.Coordinates.X <= 0)
+		if(key == controls[PaddleUp1])
 		{
-			ballSpeed.x = -ballSpeed.x;
-		}
-
-		ball.Coordinates.Y += ballSpeed.y;
-		if (ball.Coordinates.Y >= WindowHeight - 1 || ball.Coordinates.Y <= 0)
-		{
-			ballSpeed.y = -ballSpeed.y;
-		}
-	}
-	else
-	{
-		for (randomAccess_iterator paddle = enemyPaddle->begin(); paddle != enemyPaddle->end(); ++paddle)
-		{
-			if(paddle->Coordinates.Y >= WindowHeight)
-			{
-				enemyDirection.Y = -player2PaddleSpeed;
-			}
-			else if(paddle->Coordinates.Y <= -1)
-			{
-				enemyDirection.Y = player2PaddleSpeed;
-			}
-			paddle->Coordinates.X += enemyDirection.X;
-			paddle->Coordinates.Y += enemyDirection.Y;
-		}
-		ball.Coordinates.X += ballSpeed.x;
-		if (ball.Coordinates.X >= WindowWidth - 1 || ball.Coordinates.X <= 0)
-		{
-			ballSpeed.x = -ballSpeed.x;
-		}
-
-		ball.Coordinates.Y += ballSpeed.y;
-		if (ball.Coordinates.Y >= WindowHeight - 1 || ball.Coordinates.Y <= 0)
-		{
-			ballSpeed.y = -ballSpeed.y;
+			player1Direction.Y = -paddleSpeed;
+		} else if(key == controls[PaddleDown1]) {
+			player1Direction.Y = paddleSpeed;
+		} else if(key == controls[PaddleUp2]) {
+			player2Direction.Y = -player2PaddleSpeed;
+		} else if(key == controls[PaddleDown2]) {
+			player2Direction.Y = player2PaddleSpeed;
+		} else if(key == controls[Pause]) {
+			if(gameState == Playing)
+				gameState = Paused;
+			else if(gameState == Paused)
+				gameState = Playing;
 		}
 	}
 }
 
-void Draw()
+void HandleAI(COORD &enemyDirection, int paddleIndex)
 {
-	ClearScreen(consoleHandle);
+	if(Smart)
+	{
+		enemyDirection.Y = ball.Coordinates.Y > paddles[paddleIndex][0].Coordinates.Y + PaddleLength/2 ? paddleSpeed : -paddleSpeed;
+	} else {
+		enemyDirection.Y = rand()%100 > 50 ? paddleSpeed : -paddleSpeed;
+	}
+}
 
+void HandleCollision()
+{
 	typedef vector<vector<GameObject>>::iterator vector_iterator;
+
 	for (vector_iterator paddle = paddles.begin(); paddle != paddles.end(); ++paddle)
 	{
 		for (randomAccess_iterator paddlePart = paddle->begin(); paddlePart != paddle->end(); ++paddlePart)
 		{
-			paddlePart->Draw(consoleHandle);
 			if(((ball.Coordinates.X == paddlePart->Coordinates.X + 1)||(ball.Coordinates.X == paddlePart->Coordinates.X - 1)))
 			{
 				if(ball.Coordinates.Y == paddlePart->Coordinates.Y)
@@ -151,6 +91,93 @@ void Draw()
 			}
 		}
 	}
+}
+
+void Update()
+{
+	vector<COORD> directions;
+	directions.resize(paddles.size());
+
+	HandleInput(directions[0], directions[1]);
+
+	if(gameState == Playing)
+	{
+		if(!Multiplayer)
+			for(int i = 1;i < paddles.size();i++)
+				HandleAI(directions[i], i);
+
+		HandleCollision();
+	
+		typedef vector<vector<GameObject>>::iterator vector_iterator;
+
+		//Handle any and all paddles
+		for(int i = 0;i < paddles.size();i++)
+		{
+			for (randomAccess_iterator paddle = paddles[i].begin(); paddle != paddles[i].end(); ++paddle)//check if paddle can move
+			{
+				if(paddle->Coordinates.Y >= WindowHeight || paddle->Coordinates.Y <= 0)
+				{
+					directions[i].Y = 0;
+				}
+			}
+
+			for (randomAccess_iterator paddle = paddles[i].begin(); paddle != paddles[i].end(); ++paddle)//actually move it
+			{
+				paddle->Coordinates.X += directions[i].X;
+				paddle->Coordinates.Y += directions[i].Y;
+			}
+		}
+
+		//Ball movement
+		ball.Coordinates.X += (SHORT)ballSpeed.x;
+		if (ball.Coordinates.X >= WindowWidth - 1 || ball.Coordinates.X <= 0)
+		{
+			ballSpeed.x = -ballSpeed.x;
+		}
+
+		ball.Coordinates.Y += (SHORT)ballSpeed.y;
+		if (ball.Coordinates.Y >= WindowHeight - 1 || ball.Coordinates.Y <= 0)
+		{
+			ballSpeed.y = -ballSpeed.y;
+		}
+	}
+}
+
+void DrawPaddles()
+{
+	typedef vector<vector<GameObject>>::iterator vector_iterator;
+	for (vector_iterator paddle = paddles.begin(); paddle != paddles.end(); ++paddle)
+	{
+		for (randomAccess_iterator paddlePart = paddle->begin(); paddlePart != paddle->end(); ++paddlePart)
+		{
+			paddlePart->Draw(consoleHandle);
+		}
+	}
+}
+
+void DrawMenu()
+{
+
+}
+
+void Draw()
+{
+	ClearScreen(consoleHandle);
+
+	switch (gameState)
+	{
+	case Menu:
+		break;
+	case Paused:
+	case Playing:
+		DrawPaddles();
+		ball.Draw(consoleHandle);
+		break;
+	default:
+		break;
+	}
+
+	
 	/*if(ball.Coordinates.X == 0)
 	{
 		enemyScore += 1;
@@ -163,14 +190,22 @@ void Draw()
 		ball.Coordinates.X = WindowWidth / 2;
 		ball.Coordinates.Y = WindowHeight / 2;
 	}*/
-	ball.Draw(consoleHandle);
 }
 
 int main()
 {
+	InitScreen(WindowWidth*CharWidth, WindowHeight*CharHeight);
 	consoleHandle = GetStdHandle( STD_OUTPUT_HANDLE );
 
-	srand(time(NULL));
+	controls[PaddleDown1] = 's';
+	controls[PaddleUp1] = 'w';
+	controls[PaddleDown2] = 'k';
+	controls[PaddleUp2] = 'i';
+	controls[Pause] = 'p';
+
+	gameState = Playing;
+
+	srand((unsigned int)time(NULL));
 
 	vector<GameObject> leftPaddle, rightPaddle;
 	int paddleStartingPos = WindowHeight / 2 - PaddleLength / 2;
