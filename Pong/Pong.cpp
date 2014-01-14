@@ -17,7 +17,7 @@ const int CharHeight = 15;
 
 
 Vector2D ballSpeed = Vector2D(1, 1);
-int myScore = 0;
+int playerScore = 0;
 int enemyScore = 0;
 // Paddle variables
 const int PaddleLength = 5;
@@ -69,73 +69,14 @@ void HandleAI(COORD &enemyDirection)
 	}
 }
 
-void Update()
+void HandleCollision()
 {
-	COORD direction = { 0, 0 };
-	COORD enemyDirection = { 0, 0 };
-
-	HandleInput(direction, enemyDirection);
-
-	if(!Multiplayer)
-		HandleAI(enemyDirection);
-	
 	typedef vector<vector<GameObject>>::iterator vector_iterator;
-	vector_iterator playerPaddle = paddles.begin();
 
-	for (randomAccess_iterator paddle = playerPaddle->begin(); paddle != playerPaddle->end(); ++paddle)
-	{
-		if(paddle->Coordinates.Y >= WindowHeight)
-		{
-			direction.Y = -paddleSpeed;
-		}
-		else if(paddle->Coordinates.Y <= -1)
-		{
-			direction.Y = paddleSpeed;
-		}
-		paddle->Coordinates.X += direction.X;
-		paddle->Coordinates.Y += direction.Y;
-	}
-
-	//The AI's paddle
-	vector_iterator enemyPaddle = paddles.begin() + 1;
-	for (randomAccess_iterator paddle = enemyPaddle->begin(); paddle != enemyPaddle->end(); ++paddle)
-	{
-		if(paddle->Coordinates.Y >= WindowHeight)
-		{
-			enemyDirection.Y = -player2PaddleSpeed;
-		}
-		else if(paddle->Coordinates.Y <= -1)
-		{
-			enemyDirection.Y = player2PaddleSpeed;
-		}
-		paddle->Coordinates.X += enemyDirection.X;
-		paddle->Coordinates.Y += enemyDirection.Y;
-	}
-
-	//Ball movement
-	ball.Coordinates.X += (SHORT)ballSpeed.x;
-	if (ball.Coordinates.X >= WindowWidth - 1 || ball.Coordinates.X <= 0)
-	{
-		ballSpeed.x = -ballSpeed.x;
-	}
-
-	ball.Coordinates.Y += (SHORT)ballSpeed.y;
-	if (ball.Coordinates.Y >= WindowHeight - 1 || ball.Coordinates.Y <= 0)
-	{
-		ballSpeed.y = -ballSpeed.y;
-	}
-}
-
-void Draw()
-{
-	ClearScreen(consoleHandle);
-
-	typedef vector<vector<GameObject>>::iterator vector_iterator;
 	for (vector_iterator paddle = paddles.begin(); paddle != paddles.end(); ++paddle)
 	{
 		for (randomAccess_iterator paddlePart = paddle->begin(); paddlePart != paddle->end(); ++paddlePart)
 		{
-			paddlePart->Draw(consoleHandle);
 			if(((ball.Coordinates.X == paddlePart->Coordinates.X + 1)||(ball.Coordinates.X == paddlePart->Coordinates.X - 1)))
 			{
 				if(ball.Coordinates.Y == paddlePart->Coordinates.Y)
@@ -145,6 +86,106 @@ void Draw()
 			}
 		}
 	}
+}
+
+void Update()
+{
+	COORD direction = { 0, 0 };
+	COORD enemyDirection = { 0, 0 };
+
+	HandleInput(direction, enemyDirection);
+
+	if(gameState == Playing)
+	{
+		if(!Multiplayer)
+			HandleAI(enemyDirection);
+
+		HandleCollision();
+	
+		typedef vector<vector<GameObject>>::iterator vector_iterator;
+	
+		//The player paddle
+		vector_iterator playerPaddle = paddles.begin();
+		for (randomAccess_iterator paddle = playerPaddle->begin(); paddle != playerPaddle->end(); ++paddle)
+		{
+			if(paddle->Coordinates.Y >= WindowHeight)
+			{
+				direction.Y = -paddleSpeed;
+			}
+			else if(paddle->Coordinates.Y <= -1)
+			{
+				direction.Y = paddleSpeed;
+			}
+			paddle->Coordinates.X += direction.X;
+			paddle->Coordinates.Y += direction.Y;
+		}
+
+		//The AI's paddle
+		vector_iterator enemyPaddle = paddles.begin() + 1;
+		for (randomAccess_iterator paddle = enemyPaddle->begin(); paddle != enemyPaddle->end(); ++paddle)
+		{
+			if(paddle->Coordinates.Y >= WindowHeight)
+			{
+				enemyDirection.Y = -player2PaddleSpeed;
+			}
+			else if(paddle->Coordinates.Y <= -1)
+			{
+				enemyDirection.Y = player2PaddleSpeed;
+			}
+			paddle->Coordinates.X += enemyDirection.X;
+			paddle->Coordinates.Y += enemyDirection.Y;
+		}
+
+		//Ball movement
+		ball.Coordinates.X += (SHORT)ballSpeed.x;
+		if (ball.Coordinates.X >= WindowWidth - 1 || ball.Coordinates.X <= 0)
+		{
+			ballSpeed.x = -ballSpeed.x;
+		}
+
+		ball.Coordinates.Y += (SHORT)ballSpeed.y;
+		if (ball.Coordinates.Y >= WindowHeight - 1 || ball.Coordinates.Y <= 0)
+		{
+			ballSpeed.y = -ballSpeed.y;
+		}
+	}
+}
+
+void DrawPaddles()
+{
+	typedef vector<vector<GameObject>>::iterator vector_iterator;
+	for (vector_iterator paddle = paddles.begin(); paddle != paddles.end(); ++paddle)
+	{
+		for (randomAccess_iterator paddlePart = paddle->begin(); paddlePart != paddle->end(); ++paddlePart)
+		{
+			paddlePart->Draw(consoleHandle);
+		}
+	}
+}
+
+void DrawMenu()
+{
+
+}
+
+void Draw()
+{
+	ClearScreen(consoleHandle);
+
+	switch (gameState)
+	{
+	case Menu:
+		break;
+	case Playing:
+	case Paused:
+		DrawPaddles();
+		ball.Draw(consoleHandle);
+		break;
+	default:
+		break;
+	}
+
+	
 	/*if(ball.Coordinates.X == 0)
 	{
 		enemyScore += 1;
@@ -157,7 +198,6 @@ void Draw()
 		ball.Coordinates.X = WindowWidth / 2;
 		ball.Coordinates.Y = WindowHeight / 2;
 	}*/
-	ball.Draw(consoleHandle);
 }
 
 int main()
