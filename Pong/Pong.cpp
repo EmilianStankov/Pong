@@ -1,8 +1,4 @@
-#include <iostream>
-#include <vector>
-#include <conio.h>
-#include <time.h>
-
+#include "Pong.h"
 #include "ConsoleGaming.h"
 #include "Vector2D.h"
 
@@ -16,6 +12,8 @@ typedef vector<GameObject>::const_iterator const_iterator;
 // Window constants
 const int WindowWidth = 70;
 const int WindowHeight = 30;
+const int CharWidth = 9;
+const int CharHeight = 15;
 
 
 Vector2D ballSpeed = Vector2D(1, 1);
@@ -28,6 +26,8 @@ int player2PaddleSpeed = 1;
 
 // Game variables
 unsigned long sleepDuration = 100;
+GameState gameState;
+map<ControlNames, char> controls;
 
 //AI
 bool Smart = false;
@@ -40,24 +40,25 @@ void Update()
 {
 	COORD direction = { 0, 0 };
 	COORD enemyDirection = { 0, 0 };
+
 	if (kbhit())
 	{
 		char key = getch();
-		switch (key)
+
+		//make sure controls work with shift/CAPS LOCK
+		if(key >= 'A' && key <= 'Z')
+			key -= 'A' - 'a';
+
+		if(key == controls[PaddleUp1])
 		{
-		case 'i':
-			enemyDirection.Y = -player2PaddleSpeed;
-			break;
-		case 'w':
 			direction.Y = -paddleSpeed;
-			break;
-		case 'k':
-			enemyDirection.Y = player2PaddleSpeed;
-			break;
-		case 's':
+		} else if(key == controls[PaddleDown1]) {
 			direction.Y = paddleSpeed;
-			break;
-		};
+		} else if(key == controls[PaddleUp2]) {
+			enemyDirection.Y = player2PaddleSpeed;
+		} else if(key == controls[PaddleDown2]) {
+			enemyDirection.Y = player2PaddleSpeed;
+		}
 	}
 	typedef vector<vector<GameObject>>::iterator vector_iterator;
 	vector_iterator playerPaddle = paddles.begin();
@@ -83,21 +84,21 @@ void Update()
 		{
 			if(Smart)
 			{
-				paddle->Coordinates.Y += ballSpeed.y;
+				paddle->Coordinates.Y += (SHORT)ballSpeed.y;
 			}
 			else
 			{
-				paddle->Coordinates.Y -= ballSpeed.y;
+				paddle->Coordinates.Y -= (SHORT)ballSpeed.y;
 			}
 		}
 
-		ball.Coordinates.X += ballSpeed.x;
+		ball.Coordinates.X += (SHORT)ballSpeed.x;
 		if (ball.Coordinates.X >= WindowWidth - 1 || ball.Coordinates.X <= 0)
 		{
 			ballSpeed.x = -ballSpeed.x;
 		}
 
-		ball.Coordinates.Y += ballSpeed.y;
+		ball.Coordinates.Y += (SHORT)ballSpeed.y;
 		if (ball.Coordinates.Y >= WindowHeight - 1 || ball.Coordinates.Y <= 0)
 		{
 			ballSpeed.y = -ballSpeed.y;
@@ -118,13 +119,13 @@ void Update()
 			paddle->Coordinates.X += enemyDirection.X;
 			paddle->Coordinates.Y += enemyDirection.Y;
 		}
-		ball.Coordinates.X += ballSpeed.x;
+		ball.Coordinates.X += (SHORT)ballSpeed.x;
 		if (ball.Coordinates.X >= WindowWidth - 1 || ball.Coordinates.X <= 0)
 		{
 			ballSpeed.x = -ballSpeed.x;
 		}
 
-		ball.Coordinates.Y += ballSpeed.y;
+		ball.Coordinates.Y += (SHORT)ballSpeed.y;
 		if (ball.Coordinates.Y >= WindowHeight - 1 || ball.Coordinates.Y <= 0)
 		{
 			ballSpeed.y = -ballSpeed.y;
@@ -168,7 +169,13 @@ void Draw()
 
 int main()
 {
+	InitScreen(WindowWidth*CharWidth, WindowHeight*CharHeight);
 	consoleHandle = GetStdHandle( STD_OUTPUT_HANDLE );
+
+	controls[PaddleDown1] = 's';
+	controls[PaddleUp1] = 'w';
+	controls[PaddleDown2] = 'k';
+	controls[PaddleUp2] = 'i';
 
 	srand(time(NULL));
 
