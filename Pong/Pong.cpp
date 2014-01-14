@@ -30,20 +30,17 @@ GameState gameState;
 map<ControlNames, char> controls;
 
 //AI
-bool Smart = false;
-bool Multiplayer = true;
+bool Smart = true;
+bool Multiplayer = false;
 
 vector<vector<GameObject>> paddles;
 GameObject ball(WindowWidth / 2, WindowHeight / 2, '#');
 
-void Update()
+void HandleInput(COORD &player1Direction, COORD &player2Direction)
 {
-	COORD direction = { 0, 0 };
-	COORD enemyDirection = { 0, 0 };
-
-	if (kbhit())
+	if (_kbhit())
 	{
-		char key = getch();
+		char key = _getch();
 
 		//make sure controls work with shift/CAPS LOCK
 		if(key >= 'A' && key <= 'Z')
@@ -51,15 +48,37 @@ void Update()
 
 		if(key == controls[PaddleUp1])
 		{
-			direction.Y = -paddleSpeed;
+			player1Direction.Y = -paddleSpeed;
 		} else if(key == controls[PaddleDown1]) {
-			direction.Y = paddleSpeed;
+			player1Direction.Y = paddleSpeed;
 		} else if(key == controls[PaddleUp2]) {
-			enemyDirection.Y = player2PaddleSpeed;
+			player2Direction.Y = -player2PaddleSpeed;
 		} else if(key == controls[PaddleDown2]) {
-			enemyDirection.Y = player2PaddleSpeed;
+			player2Direction.Y = player2PaddleSpeed;
 		}
 	}
+}
+
+void HandleAI(COORD &enemyDirection)
+{
+	if(Smart)
+	{
+		enemyDirection.Y = ballSpeed.y > 0 ? paddleSpeed : -paddleSpeed;
+	} else {
+		enemyDirection.Y = rand()%100 > 50 ? paddleSpeed : -paddleSpeed;
+	}
+}
+
+void Update()
+{
+	COORD direction = { 0, 0 };
+	COORD enemyDirection = { 0, 0 };
+
+	HandleInput(direction, enemyDirection);
+
+	if(!Multiplayer)
+		HandleAI(enemyDirection);
+	
 	typedef vector<vector<GameObject>>::iterator vector_iterator;
 	vector_iterator playerPaddle = paddles.begin();
 
@@ -76,60 +95,34 @@ void Update()
 		paddle->Coordinates.X += direction.X;
 		paddle->Coordinates.Y += direction.Y;
 	}
+
 	//The AI's paddle
 	vector_iterator enemyPaddle = paddles.begin() + 1;
-	if(Multiplayer == false)
+	for (randomAccess_iterator paddle = enemyPaddle->begin(); paddle != enemyPaddle->end(); ++paddle)
 	{
-		for (randomAccess_iterator paddle = enemyPaddle->begin(); paddle != enemyPaddle->end() ; ++paddle)
+		if(paddle->Coordinates.Y >= WindowHeight)
 		{
-			if(Smart)
-			{
-				paddle->Coordinates.Y += (SHORT)ballSpeed.y;
-			}
-			else
-			{
-				paddle->Coordinates.Y -= (SHORT)ballSpeed.y;
-			}
+			enemyDirection.Y = -player2PaddleSpeed;
 		}
-
-		ball.Coordinates.X += (SHORT)ballSpeed.x;
-		if (ball.Coordinates.X >= WindowWidth - 1 || ball.Coordinates.X <= 0)
+		else if(paddle->Coordinates.Y <= -1)
 		{
-			ballSpeed.x = -ballSpeed.x;
+			enemyDirection.Y = player2PaddleSpeed;
 		}
-
-		ball.Coordinates.Y += (SHORT)ballSpeed.y;
-		if (ball.Coordinates.Y >= WindowHeight - 1 || ball.Coordinates.Y <= 0)
-		{
-			ballSpeed.y = -ballSpeed.y;
-		}
+		paddle->Coordinates.X += enemyDirection.X;
+		paddle->Coordinates.Y += enemyDirection.Y;
 	}
-	else
-	{
-		for (randomAccess_iterator paddle = enemyPaddle->begin(); paddle != enemyPaddle->end(); ++paddle)
-		{
-			if(paddle->Coordinates.Y >= WindowHeight)
-			{
-				enemyDirection.Y = -player2PaddleSpeed;
-			}
-			else if(paddle->Coordinates.Y <= -1)
-			{
-				enemyDirection.Y = player2PaddleSpeed;
-			}
-			paddle->Coordinates.X += enemyDirection.X;
-			paddle->Coordinates.Y += enemyDirection.Y;
-		}
-		ball.Coordinates.X += (SHORT)ballSpeed.x;
-		if (ball.Coordinates.X >= WindowWidth - 1 || ball.Coordinates.X <= 0)
-		{
-			ballSpeed.x = -ballSpeed.x;
-		}
 
-		ball.Coordinates.Y += (SHORT)ballSpeed.y;
-		if (ball.Coordinates.Y >= WindowHeight - 1 || ball.Coordinates.Y <= 0)
-		{
-			ballSpeed.y = -ballSpeed.y;
-		}
+	//Ball movement
+	ball.Coordinates.X += (SHORT)ballSpeed.x;
+	if (ball.Coordinates.X >= WindowWidth - 1 || ball.Coordinates.X <= 0)
+	{
+		ballSpeed.x = -ballSpeed.x;
+	}
+
+	ball.Coordinates.Y += (SHORT)ballSpeed.y;
+	if (ball.Coordinates.Y >= WindowHeight - 1 || ball.Coordinates.Y <= 0)
+	{
+		ballSpeed.y = -ballSpeed.y;
 	}
 }
 
@@ -177,7 +170,9 @@ int main()
 	controls[PaddleDown2] = 'k';
 	controls[PaddleUp2] = 'i';
 
-	srand(time(NULL));
+	gameState = Playing;
+
+	srand((unsigned int)time(NULL));
 
 	vector<GameObject> leftPaddle, rightPaddle;
 	int paddleStartingPos = WindowHeight / 2 - PaddleLength / 2;
