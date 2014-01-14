@@ -55,6 +55,11 @@ void HandleInput(COORD &player1Direction, COORD &player2Direction)
 			player2Direction.Y = -player2PaddleSpeed;
 		} else if(key == controls[PaddleDown2]) {
 			player2Direction.Y = player2PaddleSpeed;
+		} else if(key == controls[Pause]) {
+			if(gameState == Playing)
+				gameState = Paused;
+			else if(gameState == Paused)
+				gameState = Playing;
 		}
 	}
 }
@@ -90,50 +95,37 @@ void HandleCollision()
 
 void Update()
 {
-	COORD direction = { 0, 0 };
-	COORD enemyDirection = { 0, 0 };
+	vector<COORD> directions;
+	directions.resize(paddles.size());
 
-	HandleInput(direction, enemyDirection);
+	HandleInput(directions[0], directions[1]);
 
 	if(gameState == Playing)
 	{
 		if(!Multiplayer)
-			HandleAI(enemyDirection);
+			for(int i = 1;i < directions.size();i++)
+				HandleAI(directions[i]);
 
 		HandleCollision();
 	
 		typedef vector<vector<GameObject>>::iterator vector_iterator;
-	
-		//The player paddle
-		vector_iterator playerPaddle = paddles.begin();
-		for (randomAccess_iterator paddle = playerPaddle->begin(); paddle != playerPaddle->end(); ++paddle)
-		{
-			if(paddle->Coordinates.Y >= WindowHeight)
-			{
-				direction.Y = -paddleSpeed;
-			}
-			else if(paddle->Coordinates.Y <= -1)
-			{
-				direction.Y = paddleSpeed;
-			}
-			paddle->Coordinates.X += direction.X;
-			paddle->Coordinates.Y += direction.Y;
-		}
 
-		//The AI's paddle
-		vector_iterator enemyPaddle = paddles.begin() + 1;
-		for (randomAccess_iterator paddle = enemyPaddle->begin(); paddle != enemyPaddle->end(); ++paddle)
+		//Handle any and all paddles
+		for(int i = 0;i < paddles.size();i++)
 		{
-			if(paddle->Coordinates.Y >= WindowHeight)
+			for (randomAccess_iterator paddle = paddles[i].begin(); paddle != paddles[i].end(); ++paddle)
 			{
-				enemyDirection.Y = -player2PaddleSpeed;
+				if(paddle->Coordinates.Y >= WindowHeight)
+				{
+					directions[i].Y = -paddleSpeed;
+				}
+				else if(paddle->Coordinates.Y <= -1)
+				{
+					directions[i].Y = paddleSpeed;
+				}
+				paddle->Coordinates.X += directions[i].X;
+				paddle->Coordinates.Y += directions[i].Y;
 			}
-			else if(paddle->Coordinates.Y <= -1)
-			{
-				enemyDirection.Y = player2PaddleSpeed;
-			}
-			paddle->Coordinates.X += enemyDirection.X;
-			paddle->Coordinates.Y += enemyDirection.Y;
 		}
 
 		//Ball movement
@@ -176,8 +168,8 @@ void Draw()
 	{
 	case Menu:
 		break;
-	case Playing:
 	case Paused:
+	case Playing:
 		DrawPaddles();
 		ball.Draw(consoleHandle);
 		break;
@@ -209,6 +201,7 @@ int main()
 	controls[PaddleUp1] = 'w';
 	controls[PaddleDown2] = 'k';
 	controls[PaddleUp2] = 'i';
+	controls[Pause] = 'p';
 
 	gameState = Playing;
 
