@@ -49,14 +49,14 @@ void Update()
 		if(key >= 'A' && key <= 'Z')
 			key -= 'A' - 'a';
 
-		if(key == controls[ControlNames::PaddleUp1])
+		if(key == controls[PaddleUp1])
 		{
 			direction.Y = -paddleSpeed;
-		} else if(key == controls[ControlNames::PaddleDown1]) {
+		} else if(key == controls[PaddleDown1]) {
 			direction.Y = paddleSpeed;
-		} else if(key == controls[ControlNames::PaddleUp2]) {
+		} else if(key == controls[PaddleUp2]) {
 			enemyDirection.Y = player2PaddleSpeed;
-		} else if(key == controls[ControlNames::PaddleDown2]) {
+		} else if(key == controls[PaddleDown2]) {
 			enemyDirection.Y = player2PaddleSpeed;
 		}
 	}
@@ -84,21 +84,21 @@ void Update()
 		{
 			if(Smart)
 			{
-				paddle->Coordinates.Y += ballSpeed.y;
+				paddle->Coordinates.Y += (SHORT)ballSpeed.y;
 			}
 			else
 			{
-				paddle->Coordinates.Y -= ballSpeed.y;
+				paddle->Coordinates.Y -= (SHORT)ballSpeed.y;
 			}
 		}
 
-		ball.Coordinates.X += ballSpeed.x;
+		ball.Coordinates.X += (SHORT)ballSpeed.x;
 		if (ball.Coordinates.X >= WindowWidth - 1 || ball.Coordinates.X <= 0)
 		{
 			ballSpeed.x = -ballSpeed.x;
 		}
 
-		ball.Coordinates.Y += ballSpeed.y;
+		ball.Coordinates.Y += (SHORT)ballSpeed.y;
 		if (ball.Coordinates.Y >= WindowHeight - 1 || ball.Coordinates.Y <= 0)
 		{
 			ballSpeed.y = -ballSpeed.y;
@@ -119,13 +119,13 @@ void Update()
 			paddle->Coordinates.X += enemyDirection.X;
 			paddle->Coordinates.Y += enemyDirection.Y;
 		}
-		ball.Coordinates.X += ballSpeed.x;
+		ball.Coordinates.X += (SHORT)ballSpeed.x;
 		if (ball.Coordinates.X >= WindowWidth - 1 || ball.Coordinates.X <= 0)
 		{
 			ballSpeed.x = -ballSpeed.x;
 		}
 
-		ball.Coordinates.Y += ballSpeed.y;
+		ball.Coordinates.Y += (SHORT)ballSpeed.y;
 		if (ball.Coordinates.Y >= WindowHeight - 1 || ball.Coordinates.Y <= 0)
 		{
 			ballSpeed.y = -ballSpeed.y;
@@ -172,10 +172,10 @@ int main()
 	InitScreen(WindowWidth*CharWidth, WindowHeight*CharHeight);
 	consoleHandle = GetStdHandle( STD_OUTPUT_HANDLE );
 
-	controls[ControlNames::PaddleDown1] = 's';
-	controls[ControlNames::PaddleUp1] = 'w';
-	controls[ControlNames::PaddleDown2] = 'k';
-	controls[ControlNames::PaddleUp2] = 'i';
+	controls[PaddleDown1] = 's';
+	controls[PaddleUp1] = 'w';
+	controls[PaddleDown2] = 'k';
+	controls[PaddleUp2] = 'i';
 
 	srand(time(NULL));
 
