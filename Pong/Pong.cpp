@@ -64,11 +64,11 @@ void HandleInput(COORD &player1Direction, COORD &player2Direction)
 	}
 }
 
-void HandleAI(COORD &enemyDirection)
+void HandleAI(COORD &enemyDirection, int paddleIndex)
 {
 	if(Smart)
 	{
-		enemyDirection.Y = ballSpeed.y > 0 ? paddleSpeed : -paddleSpeed;
+		enemyDirection.Y = ball.Coordinates.Y > paddles[paddleIndex][0].Coordinates.Y + PaddleLength/2 ? paddleSpeed : -paddleSpeed;
 	} else {
 		enemyDirection.Y = rand()%100 > 50 ? paddleSpeed : -paddleSpeed;
 	}
@@ -103,8 +103,8 @@ void Update()
 	if(gameState == Playing)
 	{
 		if(!Multiplayer)
-			for(int i = 1;i < directions.size();i++)
-				HandleAI(directions[i]);
+			for(int i = 1;i < paddles.size();i++)
+				HandleAI(directions[i], i);
 
 		HandleCollision();
 	
@@ -113,16 +113,16 @@ void Update()
 		//Handle any and all paddles
 		for(int i = 0;i < paddles.size();i++)
 		{
-			for (randomAccess_iterator paddle = paddles[i].begin(); paddle != paddles[i].end(); ++paddle)
+			for (randomAccess_iterator paddle = paddles[i].begin(); paddle != paddles[i].end(); ++paddle)//check if paddle can move
 			{
-				if(paddle->Coordinates.Y >= WindowHeight)
+				if(paddle->Coordinates.Y >= WindowHeight || paddle->Coordinates.Y <= 0)
 				{
-					directions[i].Y = -paddleSpeed;
+					directions[i].Y = 0;
 				}
-				else if(paddle->Coordinates.Y <= -1)
-				{
-					directions[i].Y = paddleSpeed;
-				}
+			}
+
+			for (randomAccess_iterator paddle = paddles[i].begin(); paddle != paddles[i].end(); ++paddle)//actually move it
+			{
 				paddle->Coordinates.X += directions[i].X;
 				paddle->Coordinates.Y += directions[i].Y;
 			}
