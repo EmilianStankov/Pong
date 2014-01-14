@@ -1,8 +1,4 @@
-#include <iostream>
-#include <vector>
-#include <conio.h>
-#include <time.h>
-
+#include "Pong.h"
 #include "ConsoleGaming.h"
 #include "Vector2D.h"
 
@@ -30,6 +26,8 @@ int player2PaddleSpeed = 1;
 
 // Game variables
 unsigned long sleepDuration = 100;
+GameState gameState;
+map<ControlNames, char> controls;
 
 //AI
 bool Smart = false;
@@ -42,24 +40,25 @@ void Update()
 {
 	COORD direction = { 0, 0 };
 	COORD enemyDirection = { 0, 0 };
+
 	if (kbhit())
 	{
 		char key = getch();
-		switch (key)
+
+		//make sure controls work with shift/CAPS LOCK
+		if(key >= 'A' && key <= 'Z')
+			key -= 'A' - 'a';
+
+		if(key == controls[ControlNames::PaddleUp1])
 		{
-		case 'i':
-			enemyDirection.Y = -player2PaddleSpeed;
-			break;
-		case 'w':
 			direction.Y = -paddleSpeed;
-			break;
-		case 'k':
-			enemyDirection.Y = player2PaddleSpeed;
-			break;
-		case 's':
+		} else if(key == controls[ControlNames::PaddleDown1]) {
 			direction.Y = paddleSpeed;
-			break;
-		};
+		} else if(key == controls[ControlNames::PaddleUp2]) {
+			enemyDirection.Y = player2PaddleSpeed;
+		} else if(key == controls[ControlNames::PaddleDown2]) {
+			enemyDirection.Y = player2PaddleSpeed;
+		}
 	}
 	typedef vector<vector<GameObject>>::iterator vector_iterator;
 	vector_iterator playerPaddle = paddles.begin();
@@ -172,6 +171,11 @@ int main()
 {
 	InitScreen(WindowWidth*CharWidth, WindowHeight*CharHeight);
 	consoleHandle = GetStdHandle( STD_OUTPUT_HANDLE );
+
+	controls[ControlNames::PaddleDown1] = 's';
+	controls[ControlNames::PaddleUp1] = 'w';
+	controls[ControlNames::PaddleDown2] = 'k';
+	controls[ControlNames::PaddleUp2] = 'i';
 
 	srand(time(NULL));
 
