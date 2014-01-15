@@ -46,20 +46,44 @@ void HandleInput(COORD &player1Direction, COORD &player2Direction)
 		if(key >= 'A' && key <= 'Z')
 			key -= 'A' - 'a';
 
-		if(key == controls[PaddleUp1])
+		switch (gameState)
 		{
-			player1Direction.Y = -paddleSpeed;
-		} else if(key == controls[PaddleDown1]) {
-			player1Direction.Y = paddleSpeed;
-		} else if(key == controls[PaddleUp2]) {
-			player2Direction.Y = -player2PaddleSpeed;
-		} else if(key == controls[PaddleDown2]) {
-			player2Direction.Y = player2PaddleSpeed;
-		} else if(key == controls[Pause]) {
-			if(gameState == Playing)
-				gameState = Paused;
-			else if(gameState == Paused)
+		case Menu:
+			if(key == controls[MenuSingleplayer])
+			{
+				Multiplayer = false;
 				gameState = Playing;
+			} else if(key == controls[MenuMultiplayer]) {
+				Multiplayer = true;
+				gameState = Playing;
+			} else if(key == controls[MenuSettings]) {
+				//TODO
+			} else if(key == controls[MenuHighscore]) {
+				//TODO
+			} else if(key == controls[MenuAbout]) {
+				//TODO
+			} else if(key == controls[MenuExit]) {
+				exit(0);
+			}
+			break;
+		case Playing:
+		case Paused:
+			if(key == controls[PaddleUp1])
+			{
+				player1Direction.Y = -paddleSpeed;
+			} else if(key == controls[PaddleDown1]) {
+				player1Direction.Y = paddleSpeed;
+			} else if(key == controls[PaddleUp2]) {
+				player2Direction.Y = -player2PaddleSpeed;
+			} else if(key == controls[PaddleDown2]) {
+				player2Direction.Y = player2PaddleSpeed;
+			} else if(key == controls[Pause]) {
+				if(gameState == Playing)
+					gameState = Paused;
+				else if(gameState == Paused)
+					gameState = Playing;
+			}
+			break;
 		}
 	}
 }
@@ -115,7 +139,7 @@ void Update()
 		{
 			for (randomAccess_iterator paddle = paddles[i].begin(); paddle != paddles[i].end(); ++paddle)//check if paddle can move
 			{
-				if(paddle->Coordinates.Y >= WindowHeight || paddle->Coordinates.Y <= 0)
+				if((paddle->Coordinates.Y >= WindowHeight && directions[i].Y > 0) || (paddle->Coordinates.Y <= 0) && directions[i].Y < 0)
 				{
 					directions[i].Y = 0;
 				}
@@ -157,7 +181,7 @@ void DrawPaddles()
 
 void DrawMenu()
 {
-
+	cout << MenuString << endl;
 }
 
 void Draw()
@@ -167,6 +191,7 @@ void Draw()
 	switch (gameState)
 	{
 	case Menu:
+		DrawMenu();
 		break;
 	case Paused:
 	case Playing:
@@ -192,18 +217,30 @@ void Draw()
 	}*/
 }
 
-int main()
+void SetupControls()
 {
-	InitScreen(WindowWidth*CharWidth, WindowHeight*CharHeight);
-	consoleHandle = GetStdHandle( STD_OUTPUT_HANDLE );
-
 	controls[PaddleDown1] = 's';
 	controls[PaddleUp1] = 'w';
 	controls[PaddleDown2] = 'k';
 	controls[PaddleUp2] = 'i';
 	controls[Pause] = 'p';
 
-	gameState = Playing;
+	controls[MenuSingleplayer] = 's';
+	controls[MenuMultiplayer] = 'm';
+	controls[MenuSettings] = 't';
+	controls[MenuHighscore] = 'h';
+	controls[MenuAbout] = 'a';
+	controls[MenuExit] = 'e';
+};
+
+int main()
+{
+	InitScreen(WindowWidth*CharWidth, WindowHeight*CharHeight);
+	consoleHandle = GetStdHandle( STD_OUTPUT_HANDLE );
+
+	SetupControls();
+
+	gameState = Menu;
 
 	srand((unsigned int)time(NULL));
 

@@ -6,9 +6,11 @@
 #include <conio.h>
 #include <ctime>
 #include <map>
+#include <fstream>
 
 #include "ConsoleGaming.h"
 #include "Vector2D.h"
+#include "menu.h"
 
 enum GameState
 {
@@ -17,7 +19,8 @@ enum GameState
 
 enum ControlNames
 {
-	PaddleUp1, PaddleDown1, PaddleUp2, PaddleDown2, Pause
+	PaddleUp1, PaddleDown1, PaddleUp2, PaddleDown2, Pause,
+	MenuSingleplayer, MenuMultiplayer, MenuSettings, MenuHighscore, MenuAbout, MenuExit
 };
 
 #endif
