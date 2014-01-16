@@ -1,6 +1,7 @@
 #include "Pong.h"
 #include "ConsoleGaming.h"
 #include "Vector2D.h"
+#include "Paddle.h"
 
 using namespace std;
 
@@ -21,6 +22,7 @@ int playerScore = 0;
 int enemyScore = 0;
 // Paddle variables
 const int PaddleLength = 5;
+const float deflectionCoefficient;
 int paddleSpeed = 1;
 int player2PaddleSpeed = 1;
 
@@ -33,7 +35,7 @@ map<ControlNames, char> controls;
 bool Smart = false;
 bool Multiplayer = false;
 
-vector<vector<GameObject>> paddles;
+vector<Paddle> paddles;
 GameObject ball(WindowWidth / 2, WindowHeight / 2, '#');
 
 void HandleInput(COORD &player1Direction, COORD &player2Direction)
@@ -109,7 +111,7 @@ void HandleAI(COORD &enemyDirection, int paddleIndex)
 {
 	if(Smart)
 	{
-		enemyDirection.Y = ball.Coordinates.Y > paddles[paddleIndex][0].Coordinates.Y + PaddleLength/2 ? paddleSpeed : -paddleSpeed;
+		enemyDirection.Y = ball.Coordinates.Y > paddles[paddleIndex].position.Y ? paddleSpeed : -paddleSpeed;
 	} else {
 		enemyDirection.Y = rand()%100 > 50 ? paddleSpeed : -paddleSpeed;
 	}
@@ -117,11 +119,11 @@ void HandleAI(COORD &enemyDirection, int paddleIndex)
 
 void HandleCollision()
 {
-	typedef vector<vector<GameObject>>::iterator vector_iterator;
+	typedef vector<Paddle>::iterator vector_iterator;
 
 	for (vector_iterator paddle = paddles.begin(); paddle != paddles.end(); ++paddle)
 	{
-		for (randomAccess_iterator paddlePart = paddle->begin(); paddlePart != paddle->end(); ++paddlePart)
+		for (randomAccess_iterator paddlePart = paddle->elements.begin(); paddlePart != paddle->elements.end(); ++paddlePart)
 		{
 			if(((ball.Coordinates.X == paddlePart->Coordinates.X + 1)||(ball.Coordinates.X == paddlePart->Coordinates.X - 1)))
 			{
@@ -154,18 +156,20 @@ void Update()
 		//Handle any and all paddles
 		for(int i = 0;i < paddles.size();i++)
 		{
-			for (randomAccess_iterator paddle = paddles[i].begin(); paddle != paddles[i].end(); ++paddle)//check if paddle can move
+			for (randomAccess_iterator paddleElement = paddles[i].elements.begin(); paddleElement != paddles[i].elements.end(); ++paddleElement)//check if paddle can move
 			{
-				if((paddle->Coordinates.Y >= WindowHeight && directions[i].Y > 0) || (paddle->Coordinates.Y <= 0) && directions[i].Y < 0)
+				if((paddleElement->Coordinates.Y >= WindowHeight && directions[i].Y > 0) || (paddleElement->Coordinates.Y <= 0) && directions[i].Y < 0)
 				{
 					directions[i].Y = 0;
 				}
 			}
 
-			for (randomAccess_iterator paddle = paddles[i].begin(); paddle != paddles[i].end(); ++paddle)//actually move it
+			paddles[i].position.X += directions[i].X;
+			paddles[i].position.Y += directions[i].Y;
+			for (randomAccess_iterator paddleElement = paddles[i].elements.begin(); paddleElement != paddles[i].elements.end(); ++paddleElement)//actually move it
 			{
-				paddle->Coordinates.X += directions[i].X;
-				paddle->Coordinates.Y += directions[i].Y;
+				paddleElement->Coordinates.X += directions[i].X;
+				paddleElement->Coordinates.Y += directions[i].Y;
 			}
 		}
 
@@ -186,10 +190,10 @@ void Update()
 
 void DrawPaddles()
 {
-	typedef vector<vector<GameObject>>::iterator vector_iterator;
+	typedef vector<Paddle>::iterator vector_iterator;
 	for (vector_iterator paddle = paddles.begin(); paddle != paddles.end(); ++paddle)
 	{
-		for (randomAccess_iterator paddlePart = paddle->begin(); paddlePart != paddle->end(); ++paddlePart)
+		for (randomAccess_iterator paddlePart = paddle->elements.begin(); paddlePart != paddle->elements.end(); ++paddlePart)
 		{
 			paddlePart->Draw(consoleHandle);
 		}
@@ -276,12 +280,19 @@ int main()
 
 	srand((unsigned int)time(NULL));
 
-	vector<GameObject> leftPaddle, rightPaddle;
+	Paddle leftPaddle, rightPaddle;
 	int paddleStartingPos = WindowHeight / 2 - PaddleLength / 2;
+
+	leftPaddle.position.X = 0;
+	leftPaddle.position.Y = paddleStartingPos;
+
+	rightPaddle.position.X = WindowWidth - 1;
+	rightPaddle.position.Y = paddleStartingPos;
+
 	for (int i = 0; i < PaddleLength; ++i)
 	{
-		leftPaddle.push_back(GameObject(0, paddleStartingPos + i, '*'));
-		rightPaddle.push_back(GameObject(WindowWidth - 1, paddleStartingPos + i, '*'));
+		leftPaddle.elements.push_back(GameObject(leftPaddle.position.X, paddleStartingPos + i, '*'));
+		rightPaddle.elements.push_back(GameObject(rightPaddle.position.X, paddleStartingPos + i, '*'));
 	}
 	paddles.push_back(leftPaddle);
 	paddles.push_back(rightPaddle);
