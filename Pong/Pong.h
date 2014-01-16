@@ -14,13 +14,14 @@
 
 enum GameState
 {
-	Menu, Playing, Paused
+	Menu, Playing, Paused, Settings
 };
 
 enum ControlNames
 {
 	PaddleUp1, PaddleDown1, PaddleUp2, PaddleDown2, Pause,
-	MenuSingleplayer, MenuMultiplayer, MenuSettings, MenuHighscore, MenuAbout, MenuExit
+	MenuSingleplayer, MenuMultiplayer, MenuSettings, MenuHighscore, MenuAbout, MenuExit,
+	SettingsSmart, SettingsStupid, SettingsToMainMenu, SettingsSinglePlayer, SettingsMultiplayer, SettingsStart
 };
 
 #endif
