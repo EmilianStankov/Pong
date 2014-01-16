@@ -30,7 +30,7 @@ GameState gameState;
 map<ControlNames, char> controls;
 
 //AI
-bool Smart = true;
+bool Smart = false;
 bool Multiplayer = false;
 
 vector<vector<GameObject>> paddles;
@@ -57,7 +57,7 @@ void HandleInput(COORD &player1Direction, COORD &player2Direction)
 				Multiplayer = true;
 				gameState = Playing;
 			} else if(key == controls[MenuSettings]) {
-				//TODO
+				gameState = Settings;
 			} else if(key == controls[MenuHighscore]) {
 				//TODO
 			} else if(key == controls[MenuAbout]) {
@@ -82,6 +82,23 @@ void HandleInput(COORD &player1Direction, COORD &player2Direction)
 					gameState = Paused;
 				else if(gameState == Paused)
 					gameState = Playing;
+			}
+			break;
+		case Settings:
+			if(key == controls[SettingsSmart])
+			{
+				Smart = true;
+			} else if(key == controls[SettingsStupid]) {
+				Smart = false;
+			} else if(key == controls[SettingsToMainMenu]) {
+				gameState = Menu;
+			} else if(key == controls[SettingsSinglePlayer]) {
+				Multiplayer = false;
+			} else if(key == controls[SettingsMultiplayer]) {
+				Multiplayer = true;
+			} else if(key == controls[SettingsStart]) 
+			{
+				gameState = Playing;
 			}
 			break;
 		}
@@ -184,6 +201,11 @@ void DrawMenu()
 	cout << MenuString << endl;
 }
 
+void DrawSettings()
+{
+	cout << SettingsString << endl;
+}
+
 void Draw()
 {
 	ClearScreen(consoleHandle);
@@ -192,6 +214,9 @@ void Draw()
 	{
 	case Menu:
 		DrawMenu();
+		break;
+	case Settings:
+		DrawSettings();
 		break;
 	case Paused:
 	case Playing:
@@ -231,6 +256,13 @@ void SetupControls()
 	controls[MenuHighscore] = 'h';
 	controls[MenuAbout] = 'a';
 	controls[MenuExit] = 'e';
+
+	controls[SettingsSmart] = 's';
+	controls[SettingsStupid] = 't';
+	controls[SettingsToMainMenu] = 'q';
+	controls[SettingsSinglePlayer] = 'p';
+	controls[SettingsMultiplayer] = 'm';
+	controls[SettingsStart] = 'n';
 };
 
 int main()
