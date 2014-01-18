@@ -21,7 +21,7 @@ enum ControlNames
 {
 	PaddleUp1, PaddleDown1, PaddleUp2, PaddleDown2, Pause,
 	MenuSingleplayer, MenuMultiplayer, MenuSettings, MenuHighscore, MenuAbout, MenuExit,
-	SettingsSmart, SettingsStupid, SettingsToMainMenu, SettingsSinglePlayer, SettingsMultiplayer, SettingsStart
+	SettingsSmart, SettingsStupid, SettingsToMainMenu, SettingsSinglePlayer, SettingsMultiplayer, SettingsStart, SettingsEpilepsy
 };
 
 #endif
