@@ -22,18 +22,19 @@ int playerScore = 0;
 int enemyScore = 0;
 // Paddle variables
 const int PaddleLength = 5;
-const float deflectionCoefficient;
+//const float deflectionCoefficient;
 int paddleSpeed = 1;
 int player2PaddleSpeed = 1;
 
 // Game variables
-unsigned long sleepDuration = 100;
+unsigned long sleepDuration = 70;
 GameState gameState;
 map<ControlNames, char> controls;
 
 //AI
 bool Smart = false;
 bool Multiplayer = false;
+bool EpilepsyMode = false;
 
 vector<Paddle> paddles;
 GameObject ball(WindowWidth / 2, WindowHeight / 2, '#');
@@ -98,9 +99,13 @@ void HandleInput(COORD &player1Direction, COORD &player2Direction)
 				Multiplayer = false;
 			} else if(key == controls[SettingsMultiplayer]) {
 				Multiplayer = true;
-			} else if(key == controls[SettingsStart]) 
-			{
+			} else if(key == controls[SettingsStart]) {
 				gameState = Playing;
+			} else if(key == controls[SettingsEpilepsy]) {
+				if(!EpilepsyMode)
+					EpilepsyMode = true;
+				else 
+					EpilepsyMode = false;
 			}
 			break;
 		}
@@ -186,6 +191,36 @@ void Update()
 			ballSpeed.y = -ballSpeed.y;
 		}
 	}
+	if(EpilepsyMode)
+	{
+		int randomizer = 0;
+		randomizer = rand() % 10 + 1;
+		switch (randomizer)
+		{
+		case 1:
+			system("Color 01");
+		case 2:
+			system("Color A2");
+		case 3:
+			system("Color B3");
+		case 4:
+			system("Color 24");
+		case 5:
+			system("Color 75");
+		case 6:
+			system("Color E6");
+		case 7:
+			system("Color 07");
+		case 8:
+			system("Color 0A");
+		case 9:
+			system("Color 0B");
+		case 10:
+			system("Color 0C");
+		default:
+			system("Color 0F");
+		}
+	}
 }
 
 void DrawPaddles()
@@ -212,6 +247,8 @@ void DrawSettings()
 
 void Draw()
 {
+	ball.Color = ConsoleColors::Yellow;
+
 	ClearScreen(consoleHandle);
 
 	switch (gameState)
@@ -267,6 +304,7 @@ void SetupControls()
 	controls[SettingsSinglePlayer] = 'p';
 	controls[SettingsMultiplayer] = 'm';
 	controls[SettingsStart] = 'n';
+	controls[SettingsEpilepsy] = 'e';
 };
 
 int main()
