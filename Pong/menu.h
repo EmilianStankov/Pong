@@ -38,6 +38,7 @@ const char *SettingsString=
 "	                 *      Mode:      *\n"
 "	                 * Single [P]layer *\n"
 "	                 *  [M]ultiplayer  *\n"
+"	                 * [E]pilepsy mode *\n"
 "	                 *                 *\n"
 "	                 * Start [n]ew game*\n"
 "	                 *  [Q]uit to menu *\n"
