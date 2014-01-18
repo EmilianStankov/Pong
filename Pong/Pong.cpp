@@ -2,6 +2,7 @@
 #include "ConsoleGaming.h"
 #include "Vector2D.h"
 #include "Paddle.h"
+#include "Windows.h"
 
 using namespace std;
 
@@ -163,7 +164,7 @@ void Update()
 		{
 			for (randomAccess_iterator paddleElement = paddles[i].elements.begin(); paddleElement != paddles[i].elements.end(); ++paddleElement)//check if paddle can move
 			{
-				if((paddleElement->Coordinates.Y >= WindowHeight && directions[i].Y > 0) || (paddleElement->Coordinates.Y <= 0) && directions[i].Y < 0)
+				if((paddleElement->Coordinates.Y >= WindowHeight && directions[i].Y > 0) || (paddleElement->Coordinates.Y <= 1) && directions[i].Y < 0)
 				{
 					directions[i].Y = 0;
 				}
@@ -186,7 +187,7 @@ void Update()
 		}
 
 		ball.Coordinates.Y += (SHORT)ballSpeed.y;
-		if (ball.Coordinates.Y >= WindowHeight - 1 || ball.Coordinates.Y <= 0)
+		if (ball.Coordinates.Y >= WindowHeight || ball.Coordinates.Y <= 1)
 		{
 			ballSpeed.y = -ballSpeed.y;
 		}
@@ -221,6 +222,18 @@ void Update()
 			system("Color 0F");
 		}
 	}
+	if(ball.Coordinates.X == 0)
+	{
+		enemyScore += 1;
+		ball.Coordinates.X = WindowWidth / 2;
+		ball.Coordinates.Y = WindowHeight / 2;
+	}
+	else if(ball.Coordinates.X == WindowWidth - 1)
+	{
+		playerScore += 1;
+		ball.Coordinates.X = WindowWidth / 2;
+		ball.Coordinates.Y = WindowHeight / 2;
+	}
 }
 
 void DrawPaddles()
@@ -238,6 +251,12 @@ void DrawPaddles()
 void DrawMenu()
 {
 	cout << MenuString << endl;
+}
+
+void DrawScore()
+{
+	cout << Boundaries << endl;
+	cout << "Score: " << playerScore << "|" << enemyScore << endl;
 }
 
 void DrawSettings()
@@ -261,26 +280,13 @@ void Draw()
 		break;
 	case Paused:
 	case Playing:
+		DrawScore();
 		DrawPaddles();
 		ball.Draw(consoleHandle);
 		break;
 	default:
 		break;
 	}
-
-	
-	/*if(ball.Coordinates.X == 0)
-	{
-		enemyScore += 1;
-		ball.Coordinates.X = WindowWidth / 2;
-		ball.Coordinates.Y = WindowHeight / 2;
-	}
-	else if(ball.Coordinates.X == WindowWidth - 1)
-	{
-		myScore += 1;
-		ball.Coordinates.X = WindowWidth / 2;
-		ball.Coordinates.Y = WindowHeight / 2;
-	}*/
 }
 
 void SetupControls()
@@ -309,6 +315,8 @@ void SetupControls()
 
 int main()
 {
+	PlaySound(TEXT("pong_OST.wav"), NULL, SND_ASYNC|SND_FILENAME|SND_LOOP);
+
 	InitScreen(WindowWidth*CharWidth, WindowHeight*CharHeight);
 	consoleHandle = GetStdHandle( STD_OUTPUT_HANDLE );
 
@@ -329,7 +337,7 @@ int main()
 
 	for (int i = 0; i < PaddleLength; ++i)
 	{
-		leftPaddle.elements.push_back(GameObject(leftPaddle.position.X, paddleStartingPos + i, '*'));
+		leftPaddle.elements.push_back(GameObject(leftPaddle.position.X, paddleStartingPos + i, '$'));
 		rightPaddle.elements.push_back(GameObject(rightPaddle.position.X, paddleStartingPos + i, '*'));
 	}
 	paddles.push_back(leftPaddle);
