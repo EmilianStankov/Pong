@@ -2,7 +2,6 @@
 #include "ConsoleGaming.h"
 #include "Vector2D.h"
 #include "Paddle.h"
-#include "Windows.h"
 
 using namespace std;
 
