@@ -7,6 +7,7 @@
 #include <ctime>
 #include <map>
 #include <fstream>
+#include <Windows.h>
 
 #include "ConsoleGaming.h"
 #include "Vector2D.h"
