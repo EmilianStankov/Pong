@@ -31,7 +31,7 @@ unsigned long sleepDuration = 70;
 GameState gameState;
 map<ControlNames, char> controls;
 const float DeflectionAmount = 0.3f;
-const float BallSpeedIncrease = 0.2f;
+const float BallSpeedIncrease = 0.05f;
 
 //AI
 bool Smart = false;
@@ -40,6 +40,7 @@ bool EpilepsyMode = false;
 bool MultiplayerArrowKeys = true;
 
 vector<Paddle> paddles;
+vector<GameObject> obstacles;
 GameObject ball(WindowWidth / 2, WindowHeight / 2, '#');
 
 void HandleInput(COORD &player1Direction, COORD &player2Direction)
@@ -138,7 +139,7 @@ void HandleCollision()
 
 	for (vector_iterator paddle = paddles.begin(); paddle != paddles.end(); ++paddle)
 	{
-		if((((SHORT)(ballPosition.x + ballSpeed.x) == paddle->position.X)||((SHORT)(ballPosition.x + ballSpeed.x) == paddle->position.X)))
+		if(((SHORT)(ballPosition.x + ballSpeed.x) == paddle->position.X))
 		{
 			for (randomAccess_iterator paddlePart = paddle->elements.begin(); paddlePart != paddle->elements.end(); ++paddlePart)
 			{
@@ -152,6 +153,14 @@ void HandleCollision()
 					ballSpeed = ballSpeed.Normalize()*oldLen;
 				}
 			}
+		}
+	}
+
+	for(int i = 0;i < obstacles.size();i++)
+	{
+		if((SHORT)(ballPosition.x + ballSpeed.x) == obstacles[i].Coordinates.X && (SHORT)(ballPosition.y + ballSpeed.y) == obstacles[i].Coordinates.Y)
+		{
+			ballSpeed = ballSpeed * -1;
 		}
 	}
 }
@@ -299,6 +308,10 @@ void Draw()
 		ball.Coordinates.X = (SHORT)ballPosition.x;
 		ball.Coordinates.Y = (SHORT)ballPosition.y;
 		ball.Draw(consoleHandle);
+		for(int i = 0;i < obstacles.size();i++)
+		{
+			obstacles[i].Draw(consoleHandle);
+		}
 		break;
 	default:
 		break;
@@ -327,7 +340,15 @@ void SetupControls()
 	controls[SettingsMultiplayer] = 'm';
 	controls[SettingsStart] = 'n';
 	controls[SettingsEpilepsy] = 'e';
-};
+}
+
+void SetupObstacles()
+{
+	obstacles.push_back(GameObject(20, 10, '@'));
+	obstacles.push_back(GameObject(20, 11, '@'));
+	obstacles.push_back(GameObject(20, 12, '@'));
+	obstacles.push_back(GameObject(20, 13, '@'));
+}
 
 int main()
 {
@@ -337,6 +358,7 @@ int main()
 	consoleHandle = GetStdHandle( STD_OUTPUT_HANDLE );
 
 	SetupControls();
+	SetupObstacles();
 
 	gameState = Menu;
 
