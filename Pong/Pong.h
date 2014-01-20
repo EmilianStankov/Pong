@@ -26,4 +26,16 @@ enum ControlNames
 	HighscoreToMainMenu
 };
 
+const int PaddleLength = 5;
+
+const float DeflectionAmount = 0.3f;
+const float BallSpeedIncrease = 0.05f;
+const char* HighscoreFileName = "highscore.dat";
+
+// Window constants
+const int WindowWidth = 70;
+const int WindowHeight = 30;
+const int CharWidth = 9;
+const int CharHeight = 17;
+
 #endif

@@ -10,20 +10,12 @@ HANDLE consoleHandle;
 typedef vector<GameObject>::iterator randomAccess_iterator;
 typedef vector<GameObject>::const_iterator const_iterator;
 
-// Window constants
-const int WindowWidth = 70;
-const int WindowHeight = 30;
-const int CharWidth = 9;
-const int CharHeight = 17;
-
-
 Vector2D ballSpeed = Vector2D(1, 1);
 Vector2D ballPosition = Vector2D(WindowWidth / 2, WindowHeight / 2);
 int playerScore = 0;
 int enemyScore = 0;
 int hits = 0;
 // Paddle variables
-const int PaddleLength = 5;
 int paddleSpeed = 2;
 int player2PaddleSpeed = 2;
 
@@ -31,9 +23,7 @@ int player2PaddleSpeed = 2;
 unsigned long sleepDuration = 70;
 GameState gameState;
 map<ControlNames, char> controls;
-const float DeflectionAmount = 0.3f;
-const float BallSpeedIncrease = 0.05f;
-const char* HighscoreFileName = "highscore.dat";
+GameState LastDrawnState = About; //must initially set to anything other than menu
 
 //AI
 bool Smart = false;
@@ -384,42 +374,49 @@ void DrawSettings()
 
 void Draw()
 {
-	ball.Color = ConsoleColors::Yellow;
-
-	ClearScreen(consoleHandle);
-
-	switch (gameState)
+	if(LastDrawnState != gameState || gameState == Playing)
 	{
-	case Menu:
-		DrawMenu();
-		break;
-	case Settings:
-		DrawSettings();
-		break;
-	case Paused:
-	case Playing:
-		DrawScore();
-		DrawPaddles();
+		ClearScreen(consoleHandle);
 
-		ball.Coordinates.X = (SHORT)ballPosition.x;
-		ball.Coordinates.Y = (SHORT)ballPosition.y;
-		ball.Draw(consoleHandle);
-		for(int i = 0;i < obstacles.size();i++)
+		switch (gameState)
 		{
-			obstacles[i].Draw(consoleHandle);
+		case Menu:
+			DrawMenu();
+			LastDrawnState = Menu;
+			break;
+		case Settings:
+			DrawSettings();
+			LastDrawnState = Settings;
+			break;
+		case Paused:
+		case Playing:
+			DrawScore();
+			DrawPaddles();
+
+			ball.Coordinates.X = (SHORT)ballPosition.x;
+			ball.Coordinates.Y = (SHORT)ballPosition.y;
+			ball.Draw(consoleHandle);
+			for(int i = 0;i < obstacles.size();i++)
+			{
+				obstacles[i].Draw(consoleHandle);
+			}
+			LastDrawnState = Playing;
+			break;
+		case Instructions:
+				DrawInstructions();
+				LastDrawnState = Instructions;
+			break;
+		case About:
+				DrawAbout();
+				LastDrawnState = About;
+			break;
+		case Highscore:
+				DrawHighscore();
+				LastDrawnState = Highscore;
+			break;
+		default:
+			break;
 		}
-		break;
-	case Instructions:
-		DrawInstructions();
-		break;
-	case About:
-		DrawAbout();
-		break;
-	case Highscore:
-		DrawHighscore();
-		break;
-	default:
-		break;
 	}
 }
 
@@ -491,6 +488,8 @@ int main()
 	}
 	paddles.push_back(leftPaddle);
 	paddles.push_back(rightPaddle);
+
+	ball.Color = ConsoleColors::Yellow;
 
 	while (true)
 	{
