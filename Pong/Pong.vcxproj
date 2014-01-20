@@ -85,6 +85,9 @@
     <ClCompile Include="Pong.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="highscore.dat">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
     <None Include="menu.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

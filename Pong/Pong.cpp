@@ -14,17 +14,18 @@ typedef vector<GameObject>::const_iterator const_iterator;
 const int WindowWidth = 70;
 const int WindowHeight = 30;
 const int CharWidth = 9;
-const int CharHeight = 15;
+const int CharHeight = 17;
 
 
 Vector2D ballSpeed = Vector2D(1, 1);
 Vector2D ballPosition = Vector2D(WindowWidth / 2, WindowHeight / 2);
 int playerScore = 0;
 int enemyScore = 0;
+int hits = 0;
 // Paddle variables
 const int PaddleLength = 5;
-int paddleSpeed = 1;
-int player2PaddleSpeed = 1;
+int paddleSpeed = 2;
+int player2PaddleSpeed = 2;
 
 // Game variables
 unsigned long sleepDuration = 70;
@@ -32,6 +33,7 @@ GameState gameState;
 map<ControlNames, char> controls;
 const float DeflectionAmount = 0.3f;
 const float BallSpeedIncrease = 0.05f;
+const char* HighscoreFileName = "highscore.dat";
 
 //AI
 bool Smart = false;
@@ -41,6 +43,7 @@ bool MultiplayerArrowKeys = true;
 
 vector<Paddle> paddles;
 vector<GameObject> obstacles;
+vector<pair<char*, int>> Highscores;
 GameObject ball(WindowWidth / 2, WindowHeight / 2, '#');
 
 void HandleInput(COORD &player1Direction, COORD &player2Direction)
@@ -72,7 +75,7 @@ void HandleInput(COORD &player1Direction, COORD &player2Direction)
 			} else if(key == controls[MenuInstructions]) {
 				gameState = Instructions;
 			} else if(key == controls[MenuHighscore]) {
-				//TODO
+				gameState = Highscore;
 			} else if(key == controls[MenuAbout]) {
 				gameState = About;
 			} else if(key == controls[MenuExit]) {
@@ -137,6 +140,11 @@ void HandleInput(COORD &player1Direction, COORD &player2Direction)
 				gameState = Menu;
 			}
 			break;
+		case Highscore:
+			if(key == controls[HighscoreToMainMenu])
+			{
+				gameState = Menu;
+			}
 		}
 	}
 }
@@ -169,6 +177,8 @@ void HandleCollision()
 					ballSpeed.x = -ballSpeed.x;
 					ballSpeed.y += paddlePart->Coordinates.Y *DeflectionAmount;
 					ballSpeed = ballSpeed.Normalize()*oldLen;
+
+					hits++;
 				}
 			}
 		}
@@ -180,6 +190,52 @@ void HandleCollision()
 		{
 			ballSpeed = ballSpeed * -1;
 		}
+	}
+}
+
+void UpdateHighscore()
+{
+	ifstream file(HighscoreFileName);
+
+	while (!file.eof())
+	{
+		pair<char*, int> entry;
+		char *name = new char[50];
+
+		file >> name >> entry.second;
+		entry.first = name;
+
+		if(entry.second == 0)
+		{
+			delete [] name;
+			break;
+		}
+
+		Highscores.push_back(entry);
+	}
+
+	file.close();
+
+	if(hits > Highscores[Highscores.size()-1].second)
+	{
+		ofstream file(HighscoreFileName, ios::trunc);
+
+		for(int i = 0;i < Highscores.size();i++)
+		{
+			if(Highscores[i].second < hits)
+			{
+				char *name = new char[50];
+				cout << "Highscore! Enter yout name: ";
+				cin >> name;
+
+				Highscores.insert(Highscores.begin()+i, pair<char*, int>(name, hits));
+				Highscores.erase(Highscores.begin()+Highscores.size()-1);
+			}
+
+			file << Highscores[i].first << " " << Highscores[i].second << endl;
+		}
+
+		file.close();
 	}
 }
 
@@ -260,6 +316,8 @@ void Update()
 	}
 	if(ball.Coordinates.X <= 0)
 	{
+		UpdateHighscore();
+		hits = 0;
 		enemyScore += 1;
 		ballPosition.x = WindowWidth / 2;
 		ballPosition.y = WindowHeight / 2;
@@ -267,6 +325,8 @@ void Update()
 	}
 	else if(ball.Coordinates.X >= WindowWidth - 1)
 	{
+		UpdateHighscore();
+		hits = 0;
 		playerScore += 1;
 		ballPosition.x = WindowWidth / 2;
 		ballPosition.y = WindowHeight / 2;
@@ -303,10 +363,18 @@ void DrawAbout()
 	cout << AboutString << endl;
 }
 
+void DrawHighscore()
+{
+	for(int i = 0;i < Highscores.size();i++)
+		cout << Highscores[i].first << " " << Highscores[i].second << endl;
+	cout << "[Q]uit to Main Menu" << endl;
+}
+
 void DrawScore()
 {
 	cout << Boundaries << endl;
 	cout << "Score: " << playerScore << "|" << enemyScore << endl;
+	cout << "Hits: " << hits << endl;
 }
 
 void DrawSettings()
@@ -347,6 +415,9 @@ void Draw()
 	case About:
 		DrawAbout();
 		break;
+	case Highscore:
+		DrawHighscore();
+		break;
 	default:
 		break;
 	}
@@ -377,6 +448,8 @@ void SetupControls()
 	controls[SettingsMultiplayer] = 'm';
 	controls[SettingsStart] = 'n';
 	controls[SettingsEpilepsy] = 'e';
+
+	controls[HighscoreToMainMenu] = 'q';
 }
 
 void SetupObstacles()
@@ -396,6 +469,7 @@ int main()
 
 	SetupControls();
 	SetupObstacles();
+	UpdateHighscore();
 
 	gameState = Menu;
 
